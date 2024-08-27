@@ -1,0 +1,57 @@
+
+def FormattedMRI(MRI, image_type):
+
+
+    if image_type == 'DICOM':
+        FormatMRI = MRIImage(MRI, image_type)
+        return FormatMRI
+
+    if image_type == 'NIfTI':
+        FormatMRI = []
+        dataPixel = MRI.get_fdata()
+
+        if dataPixel.shape[1] == dataPixel.shape[0]:
+            lenMRI = dataPixel.shape[2]
+            dataPixel = dataPixel[:1]
+
+        elif dataPixel.shape[1] == dataPixel.shape[2]:
+            lenMRI = dataPixel.shape[0]
+            dataPixel = dataPixel[1:]
+
+        elif dataPixel.shape[0] == dataPixel.shape[2]:
+            lenMRI = dataPixel.shape[1]
+            dataPixel = dataPixel[1:]
+
+        for i in range(int(lenMRI)):
+            FormatMRI.append(MRIImage(MRI,image_type, data = dataPixel))
+
+        return FormatMRI
+
+class MRIImage():
+
+    def __init__(self, MRI, image_type,data =  None ):
+
+        if image_type == 'DICOM':
+            self.ImageFormated = self.FormatDicom(MRI)
+
+        if image_type == 'NIfTI':
+            self.ImageFormated = self.FormatNIfTI(MRI, data)
+
+    def FormatDicom(self,MRI):
+        # if hasattr(MRI, 'InversionTime'): ##Todo condicao para verificar se variavel existe
+        self.pixel_array = FormatTo16bits(MRI.pixel_array)
+        self.SliceLocation = MRI.SliceLocation
+
+        self.EchoTime = MRI.EchoTime
+        self.RepetitionTime = MRI.RepetitionTime
+        if hasattr(MRI, 'InversionTime'):
+            self.InversionTime = MRI.InversionTime
+        else:
+            self.InversionTime = None
+        if hasattr(MRI, 'FlipAngle'):
+            self.FlipAngle = MRI.FlipAngle
+        else:
+            self.FlipAngle = None
+        if hasattr(MRI, 'DiffusionBValue'):
+            self.DiffusionBValue = MRI.DiffusionBValue
+        else:
