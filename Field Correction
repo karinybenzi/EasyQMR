@@ -1,0 +1,24 @@
+import SimpleITK as sitk
+import numpy as np
+
+from .FormattingMatrix import FormatTo16bits
+def FieldCorrection(MRIMatrix):
+
+    for i in range(len(MRIMatrix)):
+        for j in range(len(MRIMatrix[i])):
+            image_data = MRIMatrix[i][j].pixel_array
+
+            MRIMatrix[i][j].pixel_array = FormatTo16bits(n4_bias_field_correction(image_data))
+            print(j/len(MRIMatrix[i]))
+    return MRIMatrix
+def n4_bias_field_correction(image_data):
+    # Convert the image data to a SimpleITK image
+    sitk_image = sitk.GetImageFromArray(image_data.astype(np.float32))
+
+    # Perform the N4 bias field correction
+    corrector = sitk.N4BiasFieldCorrectionImageFilter()
+    corrected_image = corrector.Execute(sitk_image)
+
+    # Convert the corrected SimpleITK image back to a NumPy array
+    corrected_data = sitk.GetArrayFromImage(corrected_image)
+    return corrected_data
